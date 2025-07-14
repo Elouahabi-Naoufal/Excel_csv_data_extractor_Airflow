@@ -267,10 +267,18 @@
 }
 
 .search-controls {
+  background: rgba(255,255,255,0.1);
+  padding: 1.5rem;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
+}
+
+.search-row {
   display: flex;
   gap: 1rem;
+  margin-bottom: 1rem;
   justify-content: center;
-  margin-bottom: 2rem;
 }
 
 .search-input {
@@ -279,30 +287,105 @@
   border-radius: 8px;
   width: 300px;
   font-size: 1rem;
+  flex: 1;
+  max-width: 400px;
+}
+
+.column-select {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  min-width: 150px;
+}
+
+.search-options {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: white;
+}
+
+.option-label input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.limit-input {
+  width: 80px;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  text-align: center;
 }
 
 .search-button {
-  padding: 0.8rem 1.5rem;
+  padding: 0.8rem 2rem;
   background: #9C27B0;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+  margin: 0 auto;
 }
 
-.search-button:hover {
+.search-button:hover:not(:disabled) {
   background: #7B1FA2;
+  transform: translateY(-2px);
+}
+
+.search-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .search-results {
-  text-align: center;
+  text-align: left;
+}
+
+.search-summary {
+  background: rgba(255,255,255,0.1);
+  padding: 1rem;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
   margin-bottom: 1rem;
 }
 
-.search-results p {
-  margin-bottom: 1rem;
+.search-summary p {
+  margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
+}
+
+.applied-filters {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.filter-tag {
+  background: rgba(255,255,255,0.2);
+  padding: 0.3rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  backdrop-filter: blur(5px);
 }
 
 .no-results {
@@ -484,5 +567,20 @@
   
   .table-container {
     font-size: 0.8rem;
+  }
+  
+  .search-row {
+    flex-direction: column;
+  }
+  
+  .search-options {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .applied-filters {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

@@ -24,6 +24,14 @@ function App() {
   const [tableStats, setTableStats] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchColumn, setSearchColumn] = useState<string>('all');
+  const [searchOptions, setSearchOptions] = useState({
+    caseSensitive: false,
+    regex: false,
+    exactMatch: false,
+    limit: 100
+  });
+  const [tableColumns, setTableColumns] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -149,18 +157,39 @@ function App() {
     setLoading(false);
   };
 
+  const fetchTableColumns = async (tableName: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/tables/${tableName}/columns`);
+      if (response.ok) {
+        const data = await response.json();
+        setTableColumns(data.columns);
+      }
+    } catch (error) {
+      console.error('[ERROR] Error fetching columns:', error);
+    }
+  };
+
   const searchTable = async (tableName: string, query: string) => {
-    console.log('[DEBUG] Searching table:', tableName, 'for:', query);
+    console.log('[DEBUG] Advanced search:', { tableName, query, searchColumn, searchOptions });
     setLoading(true);
     try {
+      const formData = new URLSearchParams();
+      formData.append('table_name', tableName);
+      formData.append('search_term', query);
+      formData.append('column', searchColumn);
+      formData.append('case_sensitive', searchOptions.caseSensitive.toString());
+      formData.append('regex', searchOptions.regex.toString());
+      formData.append('exact_match', searchOptions.exactMatch.toString());
+      formData.append('limit', searchOptions.limit.toString());
+
       const response = await fetch('http://localhost:8000/search-table', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `table_name=${encodeURIComponent(tableName)}&search_term=${encodeURIComponent(query)}`
+        body: formData
       });
-      console.log('[DEBUG] Search response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('[DEBUG] Search result:', data);
@@ -240,7 +269,11 @@ function App() {
                     <button onClick={() => {setSelectedTable(table); fetchStats(table);}} className="action-btn stats-btn">
                       📈 Stats
                     </button>
-                    <button onClick={() => {setSelectedTable(table); setView('search');}} className="action-btn search-btn">
+                    <button onClick={() => {
+                      setSelectedTable(table);
+                      fetchTableColumns(table);
+                      setView('search');
+                    }} className="action-btn search-btn">
                       🔍 Search
                     </button>
                     <button onClick={() => {setSelectedTable(table); fetchData(table, 10);}} className="action-btn data-btn">
@@ -344,22 +377,89 @@ function App() {
               <h2>🔍 Search: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
             <div className="search-controls">
-              <input
-                type="text"
-                placeholder="Search in table data..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-              <button onClick={() => searchTable(selectedTable, searchTerm)} className="search-button">
-                🔍 Search
+              <div className="search-row">
+                <input
+                  type="text"
+                  placeholder="Enter search term..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+                <select 
+                  value={searchColumn} 
+                  onChange={(e) => setSearchColumn(e.target.value)}
+                  className="column-select"
+                >
+                  <option value="all">🔍 All Columns</option>
+                  {tableColumns.map(col => (
+                    <option key={col} value={col}>📋 {col}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="search-options">
+                <label className="option-label">
+                  <input
+                    type="checkbox"
+                    checked={searchOptions.caseSensitive}
+                    onChange={(e) => setSearchOptions({...searchOptions, caseSensitive: e.target.checked})}
+                  />
+                  Case Sensitive
+                </label>
+                <label className="option-label">
+                  <input
+                    type="checkbox"
+                    checked={searchOptions.exactMatch}
+                    onChange={(e) => setSearchOptions({...searchOptions, exactMatch: e.target.checked})}
+                  />
+                  Exact Match
+                </label>
+                <label className="option-label">
+                  <input
+                    type="checkbox"
+                    checked={searchOptions.regex}
+                    onChange={(e) => setSearchOptions({...searchOptions, regex: e.target.checked})}
+                  />
+                  Regex
+                </label>
+                <div className="limit-control">
+                  <label>Max Results:</label>
+                  <input
+                    type="number"
+                    value={searchOptions.limit}
+                    onChange={(e) => setSearchOptions({...searchOptions, limit: parseInt(e.target.value) || 100})}
+                    min="1"
+                    max="1000"
+                    className="limit-input"
+                  />
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => searchTable(selectedTable, searchTerm)} 
+                className="search-button"
+                disabled={!searchTerm.trim()}
+              >
+                🔍 Advanced Search
               </button>
             </div>
             {searchResults && (
               <div className="search-results">
                 {searchResults.found > 0 ? (
                   <>
-                    <p>Found <strong>{searchResults.found}</strong> results for "{searchResults.search_term}"</p>
+                    <div className="search-summary">
+                      <p>Found <strong>{searchResults.found}</strong> results for "{searchResults.search_term}"</p>
+                      {searchResults.filters && (
+                        <div className="applied-filters">
+                          <span>Filters: </span>
+                          {searchResults.filters.column !== 'all' && <span className="filter-tag">Column: {searchResults.filters.column}</span>}
+                          {searchResults.filters.case_sensitive && <span className="filter-tag">Case Sensitive</span>}
+                          {searchResults.filters.exact_match && <span className="filter-tag">Exact Match</span>}
+                          {searchResults.filters.regex && <span className="filter-tag">Regex</span>}
+                          <span className="filter-tag">Limit: {searchResults.filters.limit}</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="table-container">
                       <table className="data-table">
                         <thead>
@@ -384,7 +484,7 @@ function App() {
                 ) : (
                   <div className="no-results">
                     <p>❌ {searchResults.message || `No results found for "${searchResults.search_term}"`}</p>
-                    <p>Try searching for different keywords or check your spelling.</p>
+                    <p>💡 Try adjusting your search filters or using different keywords.</p>
                   </div>
                 )}
               </div>

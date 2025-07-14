@@ -49,6 +49,20 @@ def get_tables():
         conn.close()
         print("[DEBUG] DB connection closed")
 
+@app.get("/tables/{table_name}/columns")
+def get_table_columns(table_name: str):
+    """Get column names for search dropdown"""
+    clean_table_name = table_name.lower().replace('(', '').replace(')', '').replace(' ', '_')
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{clean_table_name}' ORDER BY ordinal_position"
+        df = pd.read_sql(query, con=conn)
+        return {"columns": df['column_name'].tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
 @app.get("/tables/{table_name}/schema")
 def get_table_schema(table_name: str):
     print(f"[DEBUG] Getting schema for table: {table_name}")
@@ -166,64 +180,111 @@ def get_table_stats(table_name: str):
             print(f"[DEBUG] Database connection closed")
 
 from fastapi import Form
+from typing import Optional
+import re
 
 @app.post("/search-table")
-def search_table_direct(table_name: str = Form(...), search_term: str = Form(...)):
-    print(f"[DEBUG] Searching table: {table_name}, term: {search_term}")
+def search_table_advanced(
+    table_name: str = Form(...), 
+    search_term: str = Form(...),
+    column: Optional[str] = Form(None),
+    case_sensitive: bool = Form(False),
+    regex: bool = Form(False),
+    exact_match: bool = Form(False),
+    limit: int = Form(100)
+):
+    print(f"[DEBUG] Advanced search - table: {table_name}, term: {search_term}, column: {column}, case_sensitive: {case_sensitive}, regex: {regex}, exact_match: {exact_match}, limit: {limit}")
     
-    # Clean table name
     clean_table_name = table_name.lower().replace('(', '').replace(')', '').replace(' ', '_')
     
     conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         
-        # Get all data from table
-        query = f"SELECT * FROM {clean_table_name}"
-        print(f"[DEBUG] Executing query: {query}")
-        df = pd.read_sql(query, con=conn)
+        # Get data with limit for better performance
+        if column and column != 'all':
+            # Column-specific search using SQL for better performance
+            if exact_match:
+                if case_sensitive:
+                    where_clause = f"WHERE \"{column}\"::text = %s"
+                else:
+                    where_clause = f"WHERE LOWER(\"{column}\"::text) = LOWER(%s)"
+            elif regex:
+                if case_sensitive:
+                    where_clause = f"WHERE \"{column}\"::text ~ %s"
+                else:
+                    where_clause = f"WHERE \"{column}\"::text ~* %s"
+            else:
+                if case_sensitive:
+                    where_clause = f"WHERE \"{column}\"::text LIKE %s"
+                else:
+                    where_clause = f"WHERE LOWER(\"{column}\"::text) LIKE LOWER(%s)"
+            
+            search_value = search_term if exact_match or regex else f"%{search_term}%"
+            query = f"SELECT * FROM {clean_table_name} {where_clause} LIMIT {limit}"
+            
+            print(f"[DEBUG] SQL query: {query}")
+            df = pd.read_sql(query, con=conn, params=[search_value])
+        else:
+            # Multi-column search - get all data first
+            query = f"SELECT * FROM {clean_table_name}"
+            print(f"[DEBUG] Executing query: {query}")
+            df = pd.read_sql(query, con=conn)
+            
+            if df.empty:
+                return {
+                    "data": [], "columns": [], "found": 0,
+                    "search_term": search_term, "message": "Table is empty"
+                }
+            
+            # Apply search filters
+            if regex:
+                try:
+                    flags = 0 if case_sensitive else re.IGNORECASE
+                    pattern = re.compile(search_term, flags)
+                    mask = df.astype(str).apply(lambda x: x.str.contains(pattern, na=False)).any(axis=1)
+                except re.error as e:
+                    return {
+                        "data": [], "columns": [], "found": 0,
+                        "search_term": search_term, "message": f"Invalid regex pattern: {str(e)}"
+                    }
+            elif exact_match:
+                if case_sensitive:
+                    mask = df.astype(str).apply(lambda x: x.eq(search_term)).any(axis=1)
+                else:
+                    mask = df.astype(str).apply(lambda x: x.str.lower().eq(search_term.lower())).any(axis=1)
+            else:
+                mask = df.astype(str).apply(lambda x: x.str.contains(search_term, case=not case_sensitive, na=False)).any(axis=1)
+            
+            df = df[mask].head(limit)
         
-        if df.empty:
-            print(f"Table {clean_table_name} is empty")
+        if len(df) == 0:
             return {
-                "data": [],
-                "columns": [],
-                "found": 0,
+                "data": [], "columns": [], "found": 0,
                 "search_term": search_term,
-                "message": "Table is empty"
+                "message": f"No results found for '{search_term}'"
             }
         
-        # Search across all columns
-        mask = df.astype(str).apply(lambda x: x.str.contains(search_term, case=False, na=False)).any(axis=1)
-        results = df[mask]
-        
-        if len(results) == 0:
-            print(f"No results found for '{search_term}' in table {clean_table_name}")
-            return {
-                "data": [],
-                "columns": [],
-                "found": 0,
-                "search_term": search_term,
-                "message": f"No results found for '{search_term}' in this table."
-            }
-        
-        print(f"Search completed. Found {len(results)} results")
+        print(f"Search completed. Found {len(df)} results")
         return {
-            "data": results.to_dict('records'),
-            "columns": results.columns.tolist(),
-            "found": len(results),
-            "search_term": search_term
+            "data": df.to_dict('records'),
+            "columns": df.columns.tolist(),
+            "found": len(df),
+            "search_term": search_term,
+            "filters": {
+                "column": column,
+                "case_sensitive": case_sensitive,
+                "regex": regex,
+                "exact_match": exact_match,
+                "limit": limit
+            }
         }
         
     except Exception as e:
         print(f"[ERROR] Search failed: {e}")
         return {
-            "message": "Search failed", 
-            "error": str(e),
-            "data": [],
-            "columns": [],
-            "found": 0,
-            "search_term": search_term
+            "message": "Search failed", "error": str(e),
+            "data": [], "columns": [], "found": 0, "search_term": search_term
         }
     finally:
         if conn:
