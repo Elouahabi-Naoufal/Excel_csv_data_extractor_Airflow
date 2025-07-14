@@ -214,7 +214,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>📊 Excel Data Explorer</h1>
+        <div className="expleo-header">
+          <div className="expleo-logo">
+            <span className="bracket-left">{'{'}</span>
+            <span className="expleo-text">EXPLEO</span>
+            <span className="bracket-right">{'}'}</span>
+          </div>
+          <h1>Excel Data Explorer</h1>
+        </div>
         
         {loading && <div className="loading">⏳ Processing...</div>}
 
@@ -230,7 +237,7 @@ function App() {
                 id="file-upload"
               />
               <label htmlFor="file-upload" className="file-label">
-                📁 Choose Excel or CSV File
+                Choose Excel or CSV File
               </label>
             </div>
             {uploadStatus && (
@@ -238,14 +245,14 @@ function App() {
                 <p>{uploadStatus}</p>
                 {uploadStatus.includes('✅') && (
                   <button onClick={processFile} className="process-btn">
-                    🚀 Process File
+                    Process File
                   </button>
                 )}
               </div>
             )}
             <div className="upload-actions">
               <button onClick={() => setView('tables')} className="view-files-btn">
-                📊 View Processed Files
+                View Processed Files
               </button>
             </div>
           </div>
@@ -254,10 +261,10 @@ function App() {
         {view !== 'upload' && (
           <div className="nav-section">
             <button onClick={() => setView('upload')} className="nav-btn">
-              📤 Upload New File
+              Upload New File
             </button>
             <button onClick={() => setView('tables')} className="nav-btn">
-              📋 View Tables
+              View Tables
             </button>
           </div>
         )}
@@ -271,20 +278,20 @@ function App() {
                   <h3>{table.replace('data_', '').replace('_', ' ')}</h3>
                   <div className="table-actions">
                     <button onClick={() => {setSelectedTable(table); fetchSchema(table);}} className="action-btn schema-btn">
-                      🔍 Schema
+                      Schema
                     </button>
                     <button onClick={() => {setSelectedTable(table); fetchStats(table);}} className="action-btn stats-btn">
-                      📈 Stats
+                      Statistics
                     </button>
                     <button onClick={() => {
                       setSelectedTable(table);
                       fetchTableColumns(table);
                       setView('search');
                     }} className="action-btn search-btn">
-                      🔍 Search
+                      Search
                     </button>
                     <button onClick={() => {setSelectedTable(table); fetchData(table, 10);}} className="action-btn data-btn">
-                      📊 Data
+                      View Data
                     </button>
                   </div>
                 </div>
@@ -299,7 +306,7 @@ function App() {
               <button onClick={() => setView('tables')} className="back-btn">
                 ← Back to Tables
               </button>
-              <h2>📋 Schema: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <h2>Schema: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
             <div className="table-container">
               <table className="data-table">
@@ -330,7 +337,7 @@ function App() {
               <button onClick={() => setView('tables')} className="back-btn">
                 ← Back to Tables
               </button>
-              <h2>📈 Statistics: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <h2>Statistics: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
             <div className="stats-overview">
               <div className="stat-card">
@@ -381,7 +388,7 @@ function App() {
               <button onClick={() => setView('tables')} className="back-btn">
                 ← Back to Tables
               </button>
-              <h2>🔍 Search: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <h2>Search: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
             <div className="search-controls">
               <div className="search-row">
@@ -397,9 +404,9 @@ function App() {
                   onChange={(e) => setSearchColumn(e.target.value)}
                   className="column-select"
                 >
-                  <option value="all">🔍 All Columns</option>
+                  <option value="all">All Columns</option>
                   {tableColumns.map(col => (
-                    <option key={col} value={col}>📋 {col}</option>
+                    <option key={col} value={col}>{col}</option>
                   ))}
                 </select>
               </div>
@@ -447,7 +454,7 @@ function App() {
                 className="search-button"
                 disabled={!searchTerm.trim()}
               >
-                🔍 Advanced Search
+                Advanced Search
               </button>
             </div>
             {searchResults && (
@@ -497,8 +504,8 @@ function App() {
                   </>
                 ) : (
                   <div className="no-results">
-                    <p>❌ {searchResults.message || `No results found for "${searchResults.search_term}"`}</p>
-                    <p>💡 Try adjusting your search filters or using different keywords.</p>
+                    <p>{searchResults.message || `No results found for "${searchResults.search_term}"`}</p>
+                    <p>Try adjusting your search filters or using different keywords.</p>
                   </div>
                 )}
               </div>
@@ -512,7 +519,7 @@ function App() {
               <button onClick={() => setView('tables')} className="back-btn">
                 ← Back to Tables
               </button>
-              <h2>📊 Data: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <h2>Data: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
             <div className="data-controls">
               <div className="limit-control">
@@ -525,7 +532,7 @@ function App() {
                   max={tableData.total_rows}
                 />
                 <button onClick={() => fetchData(selectedTable, limit)} className="refresh-btn">
-                  🔄 Refresh
+                  Refresh
                 </button>
               </div>
               <div className="row-info">

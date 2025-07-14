@@ -6,7 +6,8 @@
 
 .App {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #004499 50%, #002266 100%);
+  font-family: 'Arial', 'Helvetica', sans-serif;
 }
 
 .App-header {
@@ -15,11 +16,40 @@
   min-height: 100vh;
 }
 
-.App-header h1 {
-  text-align: center;
+.expleo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.expleo-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  color: white;
+  font-size: 1.8rem;
+}
+
+.bracket-left, .bracket-right {
+  color: #00cc66;
+  font-size: 2.2rem;
+  font-weight: 300;
+}
+
+.expleo-text {
+  color: white;
+  font-size: 1.5rem;
+  letter-spacing: 0.1rem;
+}
+
+.App-header h1 {
   font-size: 2.5rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  font-weight: 300;
+  color: white;
+  margin: 0;
 }
 
 .loading {
@@ -27,9 +57,9 @@
   font-size: 1.2rem;
   margin: 1rem 0;
   padding: 1rem;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
 /* Upload Section */
@@ -50,18 +80,18 @@
 .file-label {
   display: inline-block;
   padding: 1rem 2rem;
-  background: rgba(255,255,255,0.2);
-  border: 2px dashed rgba(255,255,255,0.5);
-  border-radius: 15px;
+  background: rgba(255,255,255,0.15);
+  border: 2px dashed rgba(255,255,255,0.4);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 1.1rem;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  color: white;
 }
 
 .file-label:hover {
-  background: rgba(255,255,255,0.3);
-  border-color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.6);
   transform: translateY(-2px);
 }
 
@@ -76,17 +106,18 @@
 .process-btn {
   margin-top: 1rem;
   padding: 0.8rem 1.5rem;
-  background: #4CAF50;
+  background: #00cc66;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .process-btn:hover {
-  background: #45a049;
+  background: #00b359;
   transform: translateY(-2px);
 }
 
@@ -97,18 +128,18 @@
 
 .view-files-btn {
   padding: 0.8rem 1.5rem;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
   color: white;
   border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  font-weight: 500;
 }
 
 .view-files-btn:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.25);
   border-color: rgba(255,255,255,0.5);
   transform: translateY(-2px);
 }
@@ -122,18 +153,19 @@
 .nav-btn {
   margin: 0 1rem;
   padding: 0.8rem 1.5rem;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
   color: white;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  font-weight: 500;
 }
 
 .nav-btn:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.4);
   transform: translateY(-2px);
 }
 
@@ -156,17 +188,17 @@
 }
 
 .table-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 1.5rem;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.2);
   transition: all 0.3s ease;
 }
 
 .table-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255,255,255,0.15);
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.3);
 }
 
 .table-card h3 {
@@ -191,30 +223,33 @@
 }
 
 .schema-btn {
-  background: #2196F3;
+  background: #0066cc;
   color: white;
+  font-weight: 500;
 }
 
 .schema-btn:hover {
-  background: #1976D2;
+  background: #0052a3;
 }
 
 .stats-btn {
-  background: #4CAF50;
+  background: #00cc66;
   color: white;
+  font-weight: 500;
 }
 
 .stats-btn:hover {
-  background: #45a049;
+  background: #00b359;
 }
 
 .data-btn {
-  background: #FF9800;
+  background: #ff6600;
   color: white;
+  font-weight: 500;
 }
 
 .data-btn:hover {
-  background: #F57C00;
+  background: #e55a00;
 }
 
 /* Stats Section */
@@ -231,18 +266,19 @@
 }
 
 .stat-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 1.5rem;
-  border-radius: 15px;
+  border-radius: 8px;
   text-align: center;
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
   min-width: 120px;
 }
 
 .stat-card h3 {
   font-size: 2rem;
   margin: 0 0 0.5rem 0;
-  color: #4CAF50;
+  color: #00cc66;
+  font-weight: 300;
 }
 
 .stat-card p {
@@ -252,12 +288,13 @@
 }
 
 .search-btn {
-  background: #9C27B0;
+  background: #6600cc;
   color: white;
+  font-weight: 500;
 }
 
 .search-btn:hover {
-  background: #7B1FA2;
+  background: #5200a3;
 }
 
 /* Search Section */
@@ -267,10 +304,10 @@
 }
 
 .search-controls {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 1.5rem;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
   margin-bottom: 2rem;
 }
 
@@ -332,20 +369,20 @@
 
 .search-button {
   padding: 0.8rem 2rem;
-  background: #9C27B0;
+  background: #6600cc;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   display: block;
   margin: 0 auto;
 }
 
 .search-button:hover:not(:disabled) {
-  background: #7B1FA2;
+  background: #5200a3;
   transform: translateY(-2px);
 }
 
@@ -360,10 +397,10 @@
 }
 
 .search-summary {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 1rem;
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
   margin-bottom: 1rem;
 }
 
@@ -383,16 +420,16 @@
 .filter-tag {
   background: rgba(255,255,255,0.2);
   padding: 0.3rem 0.6rem;
-  border-radius: 15px;
+  border-radius: 12px;
   font-size: 0.8rem;
-  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .no-results {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 2rem;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
   text-align: center;
 }
 
@@ -412,9 +449,9 @@
   align-items: center;
   margin: 2rem 0;
   padding: 1rem;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.12);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
 .limit-control {
@@ -433,16 +470,17 @@
 
 .refresh-btn {
   padding: 0.5rem 1rem;
-  background: #4CAF50;
+  background: #00cc66;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .refresh-btn:hover {
-  background: #45a049;
+  background: #00b359;
 }
 
 .row-info {
@@ -513,18 +551,19 @@
   position: absolute;
   left: 0;
   padding: 0.6rem 1.2rem;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
   color: white;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  font-weight: 500;
 }
 
 .back-btn:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.4);
   transform: translateX(-3px);
 }
 
