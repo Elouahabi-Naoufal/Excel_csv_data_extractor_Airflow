@@ -35,6 +35,13 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
+  const highlightText = (text: string, searchTerm: string, exactMatch: boolean, caseSensitive: boolean) => {
+    if (!searchTerm || exactMatch) return text;
+    const flags = caseSensitive ? 'g' : 'gi';
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, flags);
+    return text.replace(regex, '<mark>$1</mark>');
+  };
+
   useEffect(() => {
     if (view === 'tables') {
       fetchTables();
@@ -473,7 +480,14 @@ function App() {
                           {searchResults.data && searchResults.data.map((row: any, idx: number) => (
                             <tr key={idx}>
                               {searchResults.columns && searchResults.columns.map((col: string) => (
-                                <td key={col}>{String(row[col] || '')}</td>
+                                <td key={col} dangerouslySetInnerHTML={{
+                                __html: highlightText(
+                                  String(row[col] || ''), 
+                                  searchResults.search_term,
+                                  searchResults.filters?.exact_match || false,
+                                  searchResults.filters?.case_sensitive || false
+                                )
+                              }}></td>
                               ))}
                             </tr>
                           ))}

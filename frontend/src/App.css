@@ -484,6 +484,13 @@
   background-color: #f8f9fa;
 }
 
+.data-table mark {
+  background-color: #ffeb3b;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
 .data-type {
   background: #e3f2fd;
   padding: 0.2rem 0.5rem;
