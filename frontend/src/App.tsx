@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import CompliancePage from './pages/CompliancePage';
+import SecurityPage from './pages/SecurityPage';
+import HelpPage from './pages/HelpPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 
 interface TableData {
   data: any[];
@@ -20,7 +27,7 @@ function App() {
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [schema, setSchema] = useState<Schema[]>([]);
   const [limit, setLimit] = useState<number>(10);
-  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search'>('upload');
+  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search' | 'compliance' | 'security' | 'help' | 'privacy' | 'terms'>('upload');
   const [tableStats, setTableStats] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -47,6 +54,18 @@ function App() {
       fetchTables();
     }
   }, [view]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (['privacy', 'terms', 'security'].includes(hash)) {
+        setView(hash as any);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange();
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -211,17 +230,14 @@ function App() {
     setLoading(false);
   };
 
+  const handleNavigate = (newView: string) => {
+    setView(newView as any);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <div className="expleo-header">
-          <div className="expleo-logo">
-            <span className="bracket-left">{'{'}</span>
-            <span className="expleo-text">EXPLEO</span>
-            <span className="bracket-right">{'}'}</span>
-          </div>
-          <h1>Excel Data Explorer</h1>
-        </div>
+      <Header currentView={view} onNavigate={handleNavigate} />
+      <main className="App-main">
         
         {loading && <div className="loading">⏳ Processing...</div>}
 
@@ -561,7 +577,14 @@ function App() {
             </div>
           </div>
         )}
-      </header>
+
+        {view === 'compliance' && <CompliancePage />}
+        {view === 'security' && <SecurityPage />}
+        {view === 'help' && <HelpPage />}
+        {view === 'privacy' && <PrivacyPage />}
+        {view === 'terms' && <TermsPage />}
+      </main>
+      <Footer />
     </div>
   );
 }

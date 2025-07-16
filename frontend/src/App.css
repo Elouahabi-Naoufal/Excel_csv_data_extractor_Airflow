@@ -5,52 +5,21 @@
 }
 
 .App {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0066cc 0%, #004499 50%, #002266 100%);
   font-family: 'Arial', 'Helvetica', sans-serif;
 }
 
-.App-header {
+.App-main {
+  flex: 1;
   padding: 2rem;
   color: white;
-  min-height: 100vh;
+  background: linear-gradient(135deg, #0066cc 0%, #004499 50%, #002266 100%);
+  min-height: calc(100vh - 200px);
 }
 
-.expleo-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
 
-.expleo-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  color: white;
-  font-size: 1.8rem;
-}
-
-.bracket-left, .bracket-right {
-  color: #00cc66;
-  font-size: 2.2rem;
-  font-weight: 300;
-}
-
-.expleo-text {
-  color: white;
-  font-size: 1.5rem;
-  letter-spacing: 0.1rem;
-}
-
-.App-header h1 {
-  font-size: 2.5rem;
-  font-weight: 300;
-  color: white;
-  margin: 0;
-}
 
 .loading {
   text-align: center;
