@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
-
-
 import HelpPage from './pages/HelpPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
@@ -27,7 +25,8 @@ function App() {
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [schema, setSchema] = useState<Schema[]>([]);
   const [limit, setLimit] = useState<number>(10);
-  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search' | 'help' | 'privacy' | 'terms'>('upload');
+  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search' | 'help' | 'privacy' | 'terms' | 'table-detail'>('upload');
+  const [activeTab, setActiveTab] = useState<'schema' | 'stats' | 'search' | 'data'>('schema');
   const [tableStats, setTableStats] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -45,7 +44,7 @@ function App() {
   const highlightText = (text: string, searchTerm: string, exactMatch: boolean, caseSensitive: boolean) => {
     if (!searchTerm || exactMatch) return text;
     const flags = caseSensitive ? 'g' : 'gi';
-    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, flags);
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`, flags);
     return text.replace(regex, '<mark>$1</mark>');
   };
 
@@ -66,6 +65,10 @@ function App() {
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  const handleNavigate = (newView: string) => {
+    setView(newView as any);
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -136,7 +139,6 @@ function App() {
       const data = await response.json();
       console.log('[DEBUG] Schema data:', data);
       setSchema(data.schema);
-      setView('schema');
     } catch (error) {
       console.error('[ERROR] Error fetching schema:', error);
     }
@@ -153,7 +155,6 @@ function App() {
         const data = await response.json();
         console.log('[DEBUG] Data result:', data);
         setTableData(data);
-        setView('data');
       } else {
         console.error('[ERROR] Data fetch failed:', response.status);
       }
@@ -173,7 +174,6 @@ function App() {
         const data = await response.json();
         console.log('[DEBUG] Stats result:', data);
         setTableStats(data);
-        setView('stats');
       } else {
         console.error('[ERROR] Stats endpoint failed:', response.status);
       }
@@ -220,7 +220,6 @@ function App() {
         const data = await response.json();
         console.log('[DEBUG] Search result:', data);
         setSearchResults(data);
-        setView('search');
       } else {
         console.error('[ERROR] Search failed:', response.status);
       }
@@ -230,8 +229,12 @@ function App() {
     setLoading(false);
   };
 
-  const handleNavigate = (newView: string) => {
-    setView(newView as any);
+  // Load initial data when selecting a table
+  const handleTableSelect = (tableName: string) => {
+    setSelectedTable(tableName);
+    setActiveTab('schema');
+    fetchSchema(tableName);
+    setView('table-detail');
   };
 
   return (
@@ -291,294 +294,296 @@ function App() {
             <div className="table-grid">
               {tables.map(table => (
                 <div key={table} className="table-card">
-                  <h3>{table.replace('data_', '').replace('_', ' ')}</h3>
-                  <div className="table-actions">
-                    <button onClick={() => {setSelectedTable(table); fetchSchema(table);}} className="action-btn schema-btn">
-                      Schema
-                    </button>
-                    <button onClick={() => {setSelectedTable(table); fetchStats(table);}} className="action-btn stats-btn">
-                      Statistics
-                    </button>
-                    <button onClick={() => {
-                      setSelectedTable(table);
-                      fetchTableColumns(table);
-                      setView('search');
-                    }} className="action-btn search-btn">
-                      Search
-                    </button>
-                    <button onClick={() => {setSelectedTable(table); fetchData(table, 10);}} className="action-btn data-btn">
-                      View Data
-                    </button>
-                  </div>
+                  <h3 
+                    className="clickable-table-name" 
+                    onClick={() => handleTableSelect(table)}
+                  >
+                    {table.replace('data_', '').replace('_', ' ')}
+                  </h3>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {view === 'schema' && selectedTable && (
-          <div className="schema-section">
+        {view === 'table-detail' && selectedTable && (
+          <div className="table-detail-section">
             <div className="section-header">
               <button onClick={() => setView('tables')} className="back-btn">
                 ← Back to Tables
               </button>
-              <h2>Schema: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <h2>{selectedTable.replace('data_', '').replace('_', ' ')}</h2>
             </div>
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Column Name</th>
-                    <th>Data Type</th>
-                    <th>Nullable</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {schema.map((col, idx) => (
-                    <tr key={idx}>
-                      <td><strong>{col.column_name}</strong></td>
-                      <td><span className="data-type">{col.data_type}</span></td>
-                      <td>{col.is_nullable === 'YES' ? '✅' : '❌'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {view === 'stats' && selectedTable && tableStats && (
-          <div className="stats-section">
-            <div className="section-header">
-              <button onClick={() => setView('tables')} className="back-btn">
-                ← Back to Tables
+            
+            <div className="tab-navigation">
+              <button 
+                className={`tab-btn ${activeTab === 'schema' ? 'active' : ''}`}
+                onClick={() => {fetchSchema(selectedTable); setActiveTab('schema');}}
+              >
+                Schema
               </button>
-              <h2>Statistics: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
-            </div>
-            <div className="stats-overview">
-              <div className="stat-card">
-                <h3>{tableStats.total_rows}</h3>
-                <p>Total Rows</p>
-              </div>
-              <div className="stat-card">
-                <h3>{tableStats.total_columns}</h3>
-                <p>Total Columns</p>
-              </div>
-            </div>
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Column</th>
-                    <th>Type</th>
-                    <th>Non-Null</th>
-                    <th>Null %</th>
-                    <th>Min</th>
-                    <th>Max</th>
-                    <th>Mean</th>
-                    <th>Median</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableStats.columns && tableStats.columns.map((col: any, idx: number) => (
-                    <tr key={idx}>
-                      <td><strong>{col.name}</strong></td>
-                      <td><span className="data-type">{col.type}</span></td>
-                      <td>{col.non_null_count}</td>
-                      <td>{col.null_percentage}%</td>
-                      <td>{col.min || '-'}</td>
-                      <td>{col.max || '-'}</td>
-                      <td>{col.mean || '-'}</td>
-                      <td>{col.median || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {view === 'search' && selectedTable && (
-          <div className="search-section">
-            <div className="section-header">
-              <button onClick={() => setView('tables')} className="back-btn">
-                ← Back to Tables
+              <button 
+                className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
+                onClick={() => {fetchStats(selectedTable); setActiveTab('stats');}}
+              >
+                Statistics
               </button>
-              <h2>Search: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
+              <button 
+                className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+                onClick={() => {
+                  fetchTableColumns(selectedTable);
+                  setActiveTab('search');
+                }}
+              >
+                Search
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'data' ? 'active' : ''}`}
+                onClick={() => {fetchData(selectedTable, 10); setActiveTab('data');}}
+              >
+                View Data
+              </button>
             </div>
-            <div className="search-controls">
-              <div className="search-row">
-                <input
-                  type="text"
-                  placeholder="Enter search term..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-                <select 
-                  value={searchColumn} 
-                  onChange={(e) => setSearchColumn(e.target.value)}
-                  className="column-select"
-                >
-                  <option value="all">All Columns</option>
-                  {tableColumns.map(col => (
-                    <option key={col} value={col}>{col}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="search-options">
-                <label className="option-label">
-                  <input
-                    type="checkbox"
-                    checked={searchOptions.caseSensitive}
-                    onChange={(e) => setSearchOptions({...searchOptions, caseSensitive: e.target.checked})}
-                  />
-                  Case Sensitive
-                </label>
-                <label className="option-label">
-                  <input
-                    type="checkbox"
-                    checked={searchOptions.exactMatch}
-                    onChange={(e) => setSearchOptions({...searchOptions, exactMatch: e.target.checked})}
-                  />
-                  Exact Match
-                </label>
-                <label className="option-label">
-                  <input
-                    type="checkbox"
-                    checked={searchOptions.regex}
-                    onChange={(e) => setSearchOptions({...searchOptions, regex: e.target.checked})}
-                  />
-                  Regex
-                </label>
-                <div className="limit-control">
-                  <label>Max Results:</label>
-                  <input
-                    type="number"
-                    value={searchOptions.limit}
-                    onChange={(e) => setSearchOptions({...searchOptions, limit: parseInt(e.target.value) || 100})}
-                    min="1"
-                    max="1000"
-                    className="limit-input"
-                  />
+            
+            {activeTab === 'schema' && (
+              <div className="schema-section">
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Column Name</th>
+                        <th>Data Type</th>
+                        <th>Nullable</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schema.map((col, idx) => (
+                        <tr key={idx}>
+                          <td><strong>{col.column_name}</strong></td>
+                          <td><span className="data-type">{col.data_type}</span></td>
+                          <td>{col.is_nullable === 'YES' ? '✅' : '❌'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              
-              <button 
-                onClick={() => searchTable(selectedTable, searchTerm)} 
-                className="search-button"
-                disabled={!searchTerm.trim()}
-              >
-                Advanced Search
-              </button>
-            </div>
-            {searchResults && (
-              <div className="search-results">
-                {searchResults.found > 0 ? (
-                  <>
-                    <div className="search-summary">
-                      <p>Found <strong>{searchResults.found}</strong> results for "{searchResults.search_term}"</p>
-                      {searchResults.filters && (
-                        <div className="applied-filters">
-                          <span>Filters: </span>
-                          {searchResults.filters.column !== 'all' && <span className="filter-tag">Column: {searchResults.filters.column}</span>}
-                          {searchResults.filters.case_sensitive && <span className="filter-tag">Case Sensitive</span>}
-                          {searchResults.filters.exact_match && <span className="filter-tag">Exact Match</span>}
-                          {searchResults.filters.regex && <span className="filter-tag">Regex</span>}
-                          <span className="filter-tag">Limit: {searchResults.filters.limit}</span>
+            )}
+            
+            {activeTab === 'stats' && tableStats && (
+              <div className="stats-section">
+                <div className="stats-overview">
+                  <div className="stat-card">
+                    <h3>{tableStats.total_rows}</h3>
+                    <p>Total Rows</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>{tableStats.total_columns}</h3>
+                    <p>Total Columns</p>
+                  </div>
+                </div>
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Non-Null</th>
+                        <th>Null %</th>
+                        <th>Min</th>
+                        <th>Max</th>
+                        <th>Mean</th>
+                        <th>Median</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableStats.columns && tableStats.columns.map((col: any, idx: number) => (
+                        <tr key={idx}>
+                          <td><strong>{col.name}</strong></td>
+                          <td><span className="data-type">{col.type}</span></td>
+                          <td>{col.non_null_count}</td>
+                          <td>{col.null_percentage}%</td>
+                          <td>{col.min || '-'}</td>
+                          <td>{col.max || '-'}</td>
+                          <td>{col.mean || '-'}</td>
+                          <td>{col.median || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'search' && (
+              <div className="search-section">
+                <div className="search-controls">
+                  <div className="search-row">
+                    <input
+                      type="text"
+                      placeholder="Enter search term..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                    />
+                    <select 
+                      value={searchColumn} 
+                      onChange={(e) => setSearchColumn(e.target.value)}
+                      className="column-select"
+                    >
+                      <option value="all">All Columns</option>
+                      {tableColumns.map(col => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="search-options">
+                    <label className="option-label">
+                      <input
+                        type="checkbox"
+                        checked={searchOptions.caseSensitive}
+                        onChange={(e) => setSearchOptions({...searchOptions, caseSensitive: e.target.checked})}
+                      />
+                      Case Sensitive
+                    </label>
+                    <label className="option-label">
+                      <input
+                        type="checkbox"
+                        checked={searchOptions.exactMatch}
+                        onChange={(e) => setSearchOptions({...searchOptions, exactMatch: e.target.checked})}
+                      />
+                      Exact Match
+                    </label>
+                    <label className="option-label">
+                      <input
+                        type="checkbox"
+                        checked={searchOptions.regex}
+                        onChange={(e) => setSearchOptions({...searchOptions, regex: e.target.checked})}
+                      />
+                      Regex
+                    </label>
+                    <div className="limit-control">
+                      <label>Max Results:</label>
+                      <input
+                        type="number"
+                        value={searchOptions.limit}
+                        onChange={(e) => setSearchOptions({...searchOptions, limit: parseInt(e.target.value) || 100})}
+                        min="1"
+                        max="1000"
+                        className="limit-input"
+                      />
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => searchTable(selectedTable, searchTerm)} 
+                    className="search-button"
+                    disabled={!searchTerm.trim()}
+                  >
+                    Advanced Search
+                  </button>
+                </div>
+                {searchResults && (
+                  <div className="search-results">
+                    {searchResults.found > 0 ? (
+                      <>
+                        <div className="search-summary">
+                          <p>Found <strong>{searchResults.found}</strong> results for "{searchResults.search_term}"</p>
+                          {searchResults.filters && (
+                            <div className="applied-filters">
+                              <span>Filters: </span>
+                              {searchResults.filters.column !== 'all' && <span className="filter-tag">Column: {searchResults.filters.column}</span>}
+                              {searchResults.filters.case_sensitive && <span className="filter-tag">Case Sensitive</span>}
+                              {searchResults.filters.exact_match && <span className="filter-tag">Exact Match</span>}
+                              {searchResults.filters.regex && <span className="filter-tag">Regex</span>}
+                              <span className="filter-tag">Limit: {searchResults.filters.limit}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="table-container">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            {searchResults.columns.map((col: string) => (
-                              <th key={col}>{col}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {searchResults.data && searchResults.data.map((row: any, idx: number) => (
-                            <tr key={idx}>
-                              {searchResults.columns && searchResults.columns.map((col: string) => (
-                                <td key={col} dangerouslySetInnerHTML={{
-                                __html: highlightText(
-                                  String(row[col] || ''), 
-                                  searchResults.search_term,
-                                  searchResults.filters?.exact_match || false,
-                                  searchResults.filters?.case_sensitive || false
-                                )
-                              }}></td>
+                        <div className="table-container">
+                          <table className="data-table">
+                            <thead>
+                              <tr>
+                                {searchResults.columns.map((col: string) => (
+                                  <th key={col}>{col}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {searchResults.data && searchResults.data.map((row: any, idx: number) => (
+                                <tr key={idx}>
+                                  {searchResults.columns && searchResults.columns.map((col: string) => (
+                                    <td key={col} dangerouslySetInnerHTML={{
+                                    __html: highlightText(
+                                      String(row[col] || ''), 
+                                      searchResults.search_term,
+                                      searchResults.filters?.exact_match || false,
+                                      searchResults.filters?.case_sensitive || false
+                                    )
+                                  }}></td>
+                                  ))}
+                                </tr>
                               ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                ) : (
-                  <div className="no-results">
-                    <p>{searchResults.message || `No results found for "${searchResults.search_term}"`}</p>
-                    <p>Try adjusting your search filters or using different keywords.</p>
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="no-results">
+                        <p>{searchResults.message || `No results found for "${searchResults.search_term}"`}</p>
+                        <p>Try adjusting your search filters or using different keywords.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             )}
-          </div>
-        )}
-
-        {view === 'data' && selectedTable && tableData && (
-          <div className="data-section">
-            <div className="section-header">
-              <button onClick={() => setView('tables')} className="back-btn">
-                ← Back to Tables
-              </button>
-              <h2>Data: {selectedTable.replace('data_', '').replace('_', ' ')}</h2>
-            </div>
-            <div className="data-controls">
-              <div className="limit-control">
-                <label>Rows to show:</label>
-                <input 
-                  type="number" 
-                  value={limit} 
-                  onChange={(e) => setLimit(Number(e.target.value))}
-                  min="1"
-                  max={tableData.total_rows}
-                />
-                <button onClick={() => fetchData(selectedTable, limit)} className="refresh-btn">
-                  Refresh
-                </button>
-              </div>
-              <div className="row-info">
-                Showing <strong>{tableData.showing}</strong> of <strong>{tableData.total_rows}</strong> total rows
-              </div>
-            </div>
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    {tableData.columns.map(col => (
-                      <th key={col}>{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.data && tableData.data.map((row, idx) => (
-                    <tr key={idx}>
-                      {tableData.columns && tableData.columns.map(col => (
-                        <td key={col}>{String(row[col] || '')}</td>
+            
+            {activeTab === 'data' && tableData && (
+              <div className="data-section">
+                <div className="data-controls">
+                  <div className="limit-control">
+                    <label>Rows to show:</label>
+                    <input 
+                      type="number" 
+                      value={limit} 
+                      onChange={(e) => setLimit(Number(e.target.value))}
+                      min="1"
+                      max={tableData.total_rows}
+                    />
+                    <button onClick={() => fetchData(selectedTable, limit)} className="refresh-btn">
+                      Refresh
+                    </button>
+                  </div>
+                  <div className="row-info">
+                    Showing <strong>{tableData.showing}</strong> of <strong>{tableData.total_rows}</strong> total rows
+                  </div>
+                </div>
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        {tableData.columns.map(col => (
+                          <th key={col}>{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableData.data && tableData.data.map((row, idx) => (
+                        <tr key={idx}>
+                          {tableData.columns && tableData.columns.map(col => (
+                            <td key={col}>{String(row[col] || '')}</td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
-
-
 
         {view === 'help' && <HelpPage />}
         {view === 'privacy' && <PrivacyPage />}

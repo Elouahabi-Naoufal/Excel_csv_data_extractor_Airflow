@@ -19,8 +19,6 @@
   min-height: calc(100vh - 200px);
 }
 
-
-
 .loading {
   text-align: center;
   font-size: 1.2rem;
@@ -162,6 +160,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.2);
   transition: all 0.3s ease;
+  text-align: center;
 }
 
 .table-card:hover {
@@ -176,49 +175,51 @@
   text-transform: capitalize;
 }
 
-.table-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 0.7rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
+.clickable-table-name {
   cursor: pointer;
+  color: white;
+  text-decoration: underline;
   transition: all 0.3s ease;
 }
 
-.schema-btn {
-  background: #0066cc;
+.clickable-table-name:hover {
+  color: #00d4ff;
+}
+
+/* Table Detail Section */
+.table-detail-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tab-navigation {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  padding: 0.8rem 1.5rem;
+  background: rgba(255,255,255,0.12);
   color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
-.schema-btn:hover {
-  background: #0052a3;
+.tab-btn:hover {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.3);
 }
 
-.stats-btn {
-  background: #00cc66;
-  color: white;
-  font-weight: 500;
-}
-
-.stats-btn:hover {
-  background: #00b359;
-}
-
-.data-btn {
-  background: #ff6600;
-  color: white;
-  font-weight: 500;
-}
-
-.data-btn:hover {
-  background: #e55a00;
+.tab-btn.active {
+  background: #00d4ff;
+  color: #1e3c72;
+  border-color: #00d4ff;
 }
 
 /* Stats Section */
@@ -562,12 +563,8 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .App-header {
+  .App-main {
     padding: 1rem;
-  }
-  
-  .App-header h1 {
-    font-size: 2rem;
   }
   
   .table-grid {
@@ -596,5 +593,9 @@
   .applied-filters {
     flex-direction: column;
     align-items: flex-start;
+  }
+  
+  .tab-navigation {
+    flex-wrap: wrap;
   }
 }
