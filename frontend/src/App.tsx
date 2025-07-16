@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import CompliancePage from './pages/CompliancePage';
-import SecurityPage from './pages/SecurityPage';
+
+
 import HelpPage from './pages/HelpPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
@@ -27,7 +27,7 @@ function App() {
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [schema, setSchema] = useState<Schema[]>([]);
   const [limit, setLimit] = useState<number>(10);
-  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search' | 'compliance' | 'security' | 'help' | 'privacy' | 'terms'>('upload');
+  const [view, setView] = useState<'upload' | 'tables' | 'schema' | 'data' | 'stats' | 'search' | 'help' | 'privacy' | 'terms'>('upload');
   const [tableStats, setTableStats] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -58,7 +58,7 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
-      if (['privacy', 'terms', 'security'].includes(hash)) {
+      if (['privacy', 'terms'].includes(hash)) {
         setView(hash as any);
       }
     };
@@ -578,8 +578,8 @@ function App() {
           </div>
         )}
 
-        {view === 'compliance' && <CompliancePage />}
-        {view === 'security' && <SecurityPage />}
+
+
         {view === 'help' && <HelpPage />}
         {view === 'privacy' && <PrivacyPage />}
         {view === 'terms' && <TermsPage />}

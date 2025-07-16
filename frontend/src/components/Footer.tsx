@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
           <h4>Legal</h4>
           <p><button className="footer-link" onClick={() => window.location.hash = 'privacy'}>Privacy Policy</button></p>
           <p><button className="footer-link" onClick={() => window.location.hash = 'terms'}>Terms of Service</button></p>
-          <p><button className="footer-link" onClick={() => window.location.hash = 'security'}>Security Policy</button></p>
+
         </div>
       </div>
       

@@ -207,3 +207,41 @@
   line-height: 1.5;
   color: #555;
 }
+
+.compliance-card.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compliance-card.clickable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  border-color: #00d4ff;
+}
+
+.click-hint {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.expleo-info {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.expleo-info h3 {
+  color: #1e3c72;
+  margin-bottom: 1rem;
+}
+
+.expleo-info p {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}

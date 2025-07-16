@@ -32,18 +32,8 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
           >
             Data Tables
           </button>
-          <button 
-            className={`nav-item ${currentView === 'compliance' ? 'active' : ''}`}
-            onClick={() => onNavigate('compliance')}
-          >
-            Compliance
-          </button>
-          <button 
-            className={`nav-item ${currentView === 'security' ? 'active' : ''}`}
-            onClick={() => onNavigate('security')}
-          >
-            Security
-          </button>
+
+
           <button 
             className={`nav-item ${currentView === 'help' ? 'active' : ''}`}
             onClick={() => onNavigate('help')}
