@@ -5,18 +5,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="enterprise-footer">
       <div className="footer-container">
-        <div className="footer-section">
-          <h4>Data Processing</h4>
-          <p>Secure Excel & CSV data extraction</p>
-          <p>Enterprise-grade data pipeline</p>
-        </div>
-        
-        <div className="footer-section">
-          <h4>Compliance</h4>
-          <p>GDPR Compliant</p>
-          <p>SOC 2 Type II</p>
-          <p>ISO 27001 Certified</p>
-        </div>
+
         
         <div className="footer-section">
           <h4>Support</h4>
